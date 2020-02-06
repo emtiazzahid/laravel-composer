@@ -1,0 +1,41 @@
+{
+    "name": "emtiazzahid/laravel-composer",
+    "description": "A description for laravel-composer.",
+    "type": "package",
+    "license": "MIT",
+    "keywords": [
+        "laravel"
+    ],
+    "authors": [
+        {
+            "name": "Md. Emtiaz Zahid",
+            "email": "emtiazzahid@gmail.com"
+        }
+    ],
+    "require": {
+        "illuminate/support": "^6.0"
+    },
+    "autoload": {
+        "classmap": [
+            "src/controllers"
+        ],
+        "psr-4": {
+            "EmtiazZahid\\LaravelComposer\\": "./src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "EmtiazZahid\\LaravelComposer\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "EmtiazZahid\\LaravelComposer\\LaravelComposerServiceProvider"
+            ]
+        }
+    }
+}
