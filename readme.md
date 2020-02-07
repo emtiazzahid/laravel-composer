@@ -51,6 +51,20 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 - [Md. Emtiaz Zahid](https://github.com/emtiazzahid)
 - [All Contributors](https://github.com/emtiazzahid/laravel-composer/contributors)
 
+## Todo
+It's also good to be able to convert a set of todos to a .json object
+
+```.todo
+- [X] installed package show
+- [X] package details show
+- [X] package download
+- [X] package remove
+- [] install new package
+- [] search installed package
+- [] search existing package
+- [] deactive package (revoke service provider of package)
+```
+
 ## Security
 If you discover any security-related issues, please email emtiazzahid@gmail.com instead of using the issue tracker.
 
