@@ -2,6 +2,7 @@
 
 namespace EmtiazZahid\LaravelComposer;
 
+use cebe\markdown\GithubMarkdown;
 use EmtiazZahid\LaravelComposer\LaravelComposerParser;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -33,36 +34,25 @@ class LaravelComposerController extends Controller
     {
         if (!session('laravel-composer-data')) {
             $data = [
-                'packages' => $this->laravelComposerParser->installedPackages($this->processRun(['composer', 'show','-l','--direct','--format=json']))
+                'packages' => $this->laravelComposerParser->installedPackages()
             ];
 
             session(['laravel-composer-data' => $data]);
         }
 
-        return app('view')->make($this->view_log, session('laravel-composer-data'));
-    }
+        $data = [
+            'tab' => 'home',
+            'data' => session('laravel-composer-data')
+        ];
 
-    public function processRun($commands)
-    {
-        $process = new Process($commands, null, ['COMPOSER_HOME' => '$HOME/.config/composer']);
-        $process->setWorkingDirectory(base_path());
-        $process->setTimeout(120);
-        $process->run();
-
-
-
-        if (!$process->isSuccessful()) {
-            throw new \Symfony\Component\Process\Exception\ProcessFailedException($process);
-        }
-
-        return $process->getOutput();
+        return app('view')->make($this->view_log, $data);
     }
 
     public function packageDownload($name, $version)
     {
         $fileName = str_replace("_","/",$name);
 
-        $this->processRun(['composer', 'archive',$fileName,$version,'--format=zip','--file='.$name]);
+        $this->laravelComposerParser->processRun(['composer', 'archive',$fileName,$version,'--format=zip','--file='.$name]);
 
         return response()->download(base_path($name.'.zip'))->deleteFileAfterSend(true);
     }
@@ -72,14 +62,19 @@ class LaravelComposerController extends Controller
         $fileName = str_replace("_","/",$name);
 
         try {
-            $result = $this->processRun(['composer', 'remove', $fileName, '--dev']);
+            $result = $this->laravelComposerParser->processRun(['composer', 'remove', $fileName, '--dev']);
         }catch (\Exception $exception) {
             $result = $exception->getMessage();
         }
 
         session()->flash('laravel-composer-data');
 
-        return redirect()->back()->with(['result' => $result]);
+        $data = [
+            'tab' => 'home',
+            'data' => session('laravel-composer-data')
+        ];
+
+        return redirect()->back()->with(['result' => $data]);
     }
 
     public function packageDetails($name, Request $request)
@@ -87,15 +82,52 @@ class LaravelComposerController extends Controller
         $fileName = str_replace("_","/",$name);
 
         try {
-            $result = $this->processRun(['composer', 'show', $fileName, '--format=json']);
+            $result = $this->laravelComposerParser->processRun(['composer', 'show', $fileName, '--format=json']);
         }catch (\Exception $exception) {
             $result = $exception->getMessage();
         }
 
         $request->session()->flash('result', $result);
 
-        return \Redirect()->back()->with('result' , $result);
+        $data = [
+            'tab' => 'home',
+            'data' => session('laravel-composer-data'),
+            'result' => $result
+        ];
+
+        return \Redirect()->back()->with($data);
     }
 
+    public function getPackageList(Request $request)
+    {
+        $data = [
+            'result_type' => 'list',
+            'tab' => 'search',
+            'packages' => $this->laravelComposerParser->packageList($request->vendor, $request->list_type),
+            'data' => session('laravel-composer-data')
+        ];
+
+        return view('laravel-composer::index', $data);
+    }
+
+    public function searchPackage(Request $request)
+    {
+        $data = [
+            'result_type' => 'search',
+            'tab' => 'search',
+            'output' => $this->laravelComposerParser->searchPackage($request->q, $request->tags,  $request->search_type),
+            'data' => session('laravel-composer-data')
+        ];
+
+        return view('laravel-composer::index', $data);
+    }
+
+    public function readmeView(Request $request)
+    {
+        $parser = new GithubMarkdown();
+        $html = $parser->parse(file_get_contents('https://raw.githubusercontent.com/'.$request->name.'/master/README.md'));
+
+        return $html;
+    }
 
 }
