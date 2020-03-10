@@ -60,8 +60,8 @@ It's also good to be able to convert a set of todos to a .json object
 - [X] package download
 - [X] package remove
 - [] install new package
-- [] search installed package
-- [] search existing package
+- [x] search installed package
+- [x] search existing package
 - [] deactive package (revoke service provider of package)
 ```
 
